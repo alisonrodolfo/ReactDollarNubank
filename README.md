@@ -21,7 +21,7 @@ Leia: https://blog.nubank.com.br/dolar-ptax-o-que-e-e-como-funciona/
 API: https://economia.awesomeapi.com.br/all/USD-BRL
 
 
-```REACT
+```JAVASCRIPT
 fetch(API)
     .then(res => res.json())
     .then((data) => {
