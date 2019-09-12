@@ -20,6 +20,8 @@ import {
   TextInput,
   Input,
   SearchBar,
+  ButtonToolbar,
+  Button,
 
 } from 'react-native';
 
@@ -36,14 +38,50 @@ class App extends React.Component {
   constructor(props) {
     super(props);
     this.state = {dolar: "1", ptax: "4", iof: "6.38", spread: "4", total: "0.00"};
+    this.componentDidMount = this.componentDidMount.bind(this);
+    this.handleChange = this.handleChange.bind(this);
+    this.buttonClickListener = this.buttonClickListener.bind(this);
+
   }
 
-  componentDidMount() {
+  handleChange(event) {
+      this.setState({dolar: event.dolar});
+  }
+
+  buttonClickListener(event) {
     fetch(API)
     .then(res => res.json())
     .then((data) => {
       var dist = data.USD.ask;
 
+                var cotacao = Math.round(parseFloat(dist.replace(',', '.').replace(/"/g, '')) * 100) / 100;
+                this.setState({ ptax: cotacao.toString()});
+
+                var dolar1 = this.state.dolar;
+                this.state.dolar = dolar1.toString().replace(",", ".");
+                var iof1 = this.state.iof;
+                this.state.iof = iof1.toString().replace(",", ".");
+                var spread1 = this.state.spread;;
+                this.state.spread = spread1.toString().replace(",", ".");
+
+                var sum1 = parseFloat(this.state.dolar) * parseFloat(this.state.ptax);
+                var sum2 = (sum1/100) * parseFloat(this.state.spread);
+                var sum3 = sum1 + sum2;
+                var sum4 = (sum3/100) * parseFloat(this.state.iof);
+                var sum5 = sum4 + sum3;
+                this.setState({ total: sum5.toFixed(2).toString()});
+
+
+    })
+    .catch(console.log)
+
+  };
+
+  componentDidMount(event) {
+    fetch(API)
+    .then(res => res.json())
+    .then((data) => {
+      var dist = data.USD.ask;
 
                 var cotacao = Math.round(parseFloat(dist.replace(',', '.').replace(/"/g, '')) * 100) / 100;
                 this.setState({ ptax: cotacao.toString()});
@@ -92,7 +130,7 @@ class App extends React.Component {
                 <Text style={styles.sectionTitle}>Valor USD</Text>
 
                 <TextInput style={styles.formControl} placeholder="USD" keyboardType="numeric"
-                    onChangeText={text => onChangeText(text)}
+                    onChangeText={dolar => this.setState({dolar})}
                     value={this.state.dolar}
                      //value={dolar}
                     />
@@ -100,7 +138,7 @@ class App extends React.Component {
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Valor Final R$</Text>
                 <TextInput style={styles.formControl} placeholder="R$" keyboardType="numeric"
-                      onChangeText={text => onChangeText(text)}
+                    editable = {false}
                     value={this.state.total}
                     />
               </View>
@@ -113,28 +151,30 @@ class App extends React.Component {
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Dólar PTAX</Text>
                 <TextInput style={styles.varsInput} keyboardType="numeric"
-                      onChangeText={text => onChangeText(text)}
+                      onChangeText={ptax => this.setState({ptax})}
                       value={this.state.ptax}
                     />
               </View>
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>IOF (%)</Text>
                 <TextInput style={styles.varsInput} keyboardType="numeric"
-                      onChangeText={text => onChangeText(text)}
+                      onChangeText={iof => this.setState({iof})}
                     value={this.state.iof}
                     />
               </View>
               <View style={styles.sectionContainer}>
                 <Text style={styles.sectionTitle}>Spread (%)</Text>
                 <TextInput style={styles.varsInput} keyboardType="numeric"
-                      onChangeText={text => onChangeText(text)}
+                      onChangeText={spread => this.setState({spread})}
                     value={this.state.spread}
                     />
               </View>
+
               <Text style={styles.varsText} >Valor representa o montante total que virá na fatura, já incluído spread e IOF.</Text>
             </View>
-
-
+            <View style={styles.buttonCalc}>
+            <Button  onPress={this.buttonClickListener} title="Calcular"></Button>
+            </View>
             </View>
           </ScrollView>
         </SafeAreaView>
@@ -153,6 +193,21 @@ class App extends React.Component {
 
 
 const styles = StyleSheet.create({
+  buttonCalc: {
+    height: 100,
+    width: 200,
+    padding: 5,
+    fontSize: 14,
+    lineHeight: 1.5,
+    borderRadius: 3,
+    color: "#fff",
+    backgroundColor: "#007bff",
+    borderColor: "#007bff",
+    color: "#212529",
+    textAlign: "center",
+    backgroundColor: "transparent",
+    alignSelf: 'center',
+  },
   scrollView: {
     backgroundColor: Colors.lighter,
   },
@@ -184,9 +239,11 @@ const styles = StyleSheet.create({
   varsInput: {
     height: 50,
     width: 150,
+    alignSelf: 'center',
     borderColor: '#6E2B77',
     borderWidth: 1,
     borderRadius: 20,
+    textAlign: 'center',
   },
   formControl: {
     height: 50,
@@ -194,6 +251,7 @@ const styles = StyleSheet.create({
     borderColor: '#6E2B77',
     borderWidth: 1,
     borderRadius: 20,
+    textAlign: 'center',
 
     },
   sectionContainer: {
@@ -202,6 +260,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
   },
   homeTitle: {
+    marginTop: 32,
     fontSize: 36,
     fontWeight: '600',
     color: '#8a05be',
